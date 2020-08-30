@@ -109,14 +109,7 @@ class KeyStore(commands.Cog):
 
         per_page = 20
 
-        query = (
-            session.query(Game)
-            .filter(Game.keys != None)
-            .slice(
-                page * per_page,
-                (page * per_page) + per_page,
-            )
-        )
+        query = session.query(Game)
 
         first = ((page - 1) * per_page) + 1
         last = page * per_page
@@ -124,7 +117,7 @@ class KeyStore(commands.Cog):
 
         msg = embed(f"Showing {first} to {last} of {total}", title="Browse Games")
 
-        for g in query.all():
+        for g in query.limit(per_page).offset((page - 1) * per_page).all():
             msg.add_field(
                 name=g.pretty_name,
                 value=", ".join(k.platform for k in g.keys),
