@@ -102,6 +102,38 @@ class KeyStore(commands.Cog):
         await ctx.send(embed=msg)
 
     @commands.command()
+    async def browse(self, ctx, page=1):
+        """Browse through available games"""
+
+        session = Session()
+
+        per_page = 20
+
+        query = (
+            session.query(Game)
+            .filter(Game.keys != None)
+            .slice(
+                page * per_page,
+                (page * per_page) + per_page,
+            )
+        )
+
+        first = ((page - 1) * per_page) + 1
+        last = page * per_page
+        total = query.count()
+
+        msg = embed(f"Showing {first} to {last} of {total}", title="Browse Games")
+
+        for g in query.all():
+            msg.add_field(
+                name=g.pretty_name,
+                value=", ".join(k.platform for k in g.keys),
+                inline=False,
+            )
+
+        ctx.send(embed=msg)
+
+    @commands.command()
     async def claim(self, ctx, platform=None, *game_name):
         """Claims a game from available keys"""
         session = Session()
