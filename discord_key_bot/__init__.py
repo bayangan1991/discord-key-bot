@@ -89,6 +89,7 @@ class KeyStore(commands.Cog):
         for g in (
             session.query(Game)
             .filter(Game.name.like(f"%{search_args}%"))
+            .order_by(Game.pretty_name.asc())
             .limit(20)
             .all()
         ):
@@ -109,18 +110,18 @@ class KeyStore(commands.Cog):
 
         per_page = 20
 
-        query = session.query(Game)
+        query = session.query(Game).order_by(Game.pretty_name.asc())
 
         first = ((page - 1) * per_page) + 1
-        last = page * per_page
         total = query.count()
+        last = min(page * per_page, total)
 
         msg = embed(f"Showing {first} to {last} of {total}", title="Browse Games")
 
         for g in query.limit(per_page).offset((page - 1) * per_page).all():
             msg.add_field(
                 name=g.pretty_name,
-                value=", ".join(k.platform for k in g.keys),
+                value=", ".join(k.platform.title() for k in g.keys),
                 inline=False,
             )
 
@@ -158,7 +159,7 @@ class KeyStore(commands.Cog):
         if not search_args:
             await ctx.send(embed=embed("No game search provided!"))
 
-        q = session.query(Game).filter(Game.name.like(f"%{search_args}%")).limit(3)
+        q = session.query(Game).filter(Game.name.like(f"%{search_args}%")).order_by(Game.pretty_name.asc()).limit(3)
 
         if q.count() > 1:
             msg = embed(
