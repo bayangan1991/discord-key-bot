@@ -1,0 +1,16 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/*.pyc": true,
+        "**/__pycache__": true
+    },
+    "python.linting.pylintArgs": [
+        "--load-plugins",
+        "pylint-sqlalchemy"
+    ],
+    "python.pythonPath": "C:\\Users\\Ryan\\.virtualenvs\\discord-key-bot-r6wwC4qe\\Scripts\\python.exe"
+}
