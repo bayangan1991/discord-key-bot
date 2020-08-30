@@ -131,7 +131,7 @@ class KeyStore(commands.Cog):
                 inline=False,
             )
 
-        ctx.send(embed=msg)
+        await ctx.send(embed=msg)
 
     @commands.command()
     async def claim(self, ctx, platform=None, *game_name):
