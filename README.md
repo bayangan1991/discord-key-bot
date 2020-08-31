@@ -93,7 +93,7 @@ I recommend use pipenv for virtualenv management. I have also provided the requi
 Run this bot in a docker container with the following command
 
 ```shell
-docker run -e TOKEN=<YOUR DISCORD TOKEN> -e SQLALCHEMY_URI=<DB URI> 
+docker run -e TOKEN=<YOUR DISCORD TOKEN> -e SQLALCHEMY_URI=<DB URI> bayangan/discord-key-bot
 ```
 
 Or using docker compose. Application runs out of the `/app` folder
