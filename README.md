@@ -86,7 +86,7 @@ BANG=! # Bot command
 WAIT_TIME=84600 # Time between claims in seconds
 ```
 
-I recommend use pipenv for virtualenv management. I have also provided the requirements.txt for compatibility. I do recommend using some sort of virtual environment though.
+I use pipenv for virtualenv management. I have also provided the requirements.txt for compatibility. I do recommend using some sort of virtual environment though.
 
 ### Docker
 
