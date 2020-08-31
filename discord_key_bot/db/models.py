@@ -2,6 +2,7 @@ import re
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from discord_key_bot.keyparse import parse_name
 
@@ -48,6 +49,14 @@ class Member(Base):
     name = Column(String)
     last_claim = Column(DateTime)
 
+    _guilds = relationship("Guild", cascade="all, delete-orphan")
+    guilds = association_proxy(
+        "_guilds",
+        "guild_id",
+        creator=lambda id: Guild(guild_id=id),
+        cascade_scalar_deletes=True,
+    )
+
     @classmethod
     def get(cls, session, id, name):
         member = session.query(cls).filter(cls.id == id).first()
@@ -57,3 +66,11 @@ class Member(Base):
             session.add(member)
 
         return member
+
+
+class Guild(Base):
+    __tablename__ = "guilds"
+
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(Integer)
+    member_id = Column(Integer, ForeignKey("members.id"))
