@@ -88,6 +88,15 @@ WAIT_TIME=84600 # Time between claims in seconds
 
 I use pipenv for virtualenv management. I have also provided the requirements.txt for compatibility. I do recommend using some sort of virtual environment though.
 
+To start the bot:
+
+```shell
+pipenv run python run.py
+# or
+venv/activate
+python run.py
+```
+
 ### Docker
 
 Run this bot in a docker container with the following command
