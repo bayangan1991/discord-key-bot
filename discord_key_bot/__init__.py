@@ -102,7 +102,7 @@ class KeyStore(commands.Cog):
 
     @commands.command()
     async def search(self, ctx, *game_name):
-        """Searches avaiable games"""
+        """Searches available games"""
 
         msg = embed("Top 15 search results...", title="Search Results")
 
