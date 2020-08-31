@@ -274,7 +274,7 @@ class KeyStore(commands.Cog):
         if not game.keys:
             session.delete(game)
 
-        if key.creator != member:
+        if key.creator_id != member.id:
             member.last_claim = datetime.utcnow()
         session.commit()
 
