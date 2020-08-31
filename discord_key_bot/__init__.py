@@ -135,7 +135,7 @@ class KeyStore(commands.Cog):
 
         msg = embed(f"Showing {first} to {last} of {total}", title="Browse Games")
 
-        for g in query.from_self().limit(per_page), offset(offset).all():
+        for g in query.from_self().limit(per_page).offset(offset).all():
             msg.add_field(
                 name=g.pretty_name,
                 value=", ".join(k.platform.title() for k in g.keys),
