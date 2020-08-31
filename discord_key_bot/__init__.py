@@ -131,8 +131,8 @@ class KeyStore(commands.Cog):
 
         games, query = find_games(session, "", ctx.guild.id, per_page, offset)
 
-        first = ((page - 1) * per_page) + 1
-        total = query.count()
+        first = offset + 1
+        total = query.from_self().offset(None).count()
         last = min(page * per_page, total)
 
         msg = embed(f"Showing {first} to {last} of {total}", title="Browse Games")
