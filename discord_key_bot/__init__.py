@@ -40,14 +40,12 @@ def find_games(session, search_args, guild_id, limit=15, offset=None):
         .filter(Member.guilds.contains(guild_id))
         .filter(Game.name.like(f"%{search_args}%"))
         .order_by(Game.pretty_name.asc())
-        .offset(offset)
-        .limit(limit)
     )
 
     if not offset:
         games = defaultdict(lambda: defaultdict(list))
 
-        for g in query.all():
+        for g in query.from_self().offset(offset).limit(limit).all():
             games[g.pretty_name] = {
                 k: list(v) for k, v in groupby(g.keys, lambda x: x.platform)
             }
@@ -132,12 +130,12 @@ class KeyStore(commands.Cog):
         games, query = find_games(session, "", ctx.guild.id, per_page, offset)
 
         first = offset + 1
-        total = query.from_self().offset(None).count()
+        total = query.count()
         last = min(page * per_page, total)
 
         msg = embed(f"Showing {first} to {last} of {total}", title="Browse Games")
 
-        for g in query.all():
+        for g in query.from_self().limit(per_page), offset(offset).all():
             msg.add_field(
                 name=g.pretty_name,
                 value=", ".join(k.platform.title() for k in g.keys),
