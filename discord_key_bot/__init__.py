@@ -58,50 +58,9 @@ def find_games(session, search_args, guild_id, limit=15, offset=None):
     return games, query
 
 
-class KeyStore(commands.Cog):
+class GuildCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.command()
-    async def add(self, ctx, key, *game_name):
-        """Add a key (Do this in a private message)"""
-        session = Session()
-
-        game = Game.get(session, " ".join(game_name))
-
-        platform, key = parse_key(key)
-
-        if ctx.guild:
-            await ctx.message.delete()
-
-        if not platform:
-            await ctx.send(embed=embed(key, Colours.RED))
-            return
-
-        found = session.query(Key).filter(Key.key == key).count()
-
-        if found:
-            await ctx.send(
-                embed=embed(
-                    f"Key already exists!",
-                    Colours.GOLD,
-                )
-            )
-            return
-
-        member = Member.get(session, ctx.author.id, ctx.author.name)
-
-        game.keys.append(Key(platform=platform, key=key, creator=member, game=game))
-
-        session.commit()
-
-        await ctx.send(
-            embed=embed(
-                f'Key for "{game.pretty_name}" added. Thanks {ctx.author.name}!',
-                Colours.GREEN,
-                title=f"{platform.title()} Key Added",
-            )
-        )
 
     @commands.command()
     async def search(self, ctx, *game_name):
@@ -125,6 +84,13 @@ class KeyStore(commands.Cog):
     async def browse(self, ctx, page=1):
         """Browse through available games"""
 
+        if not ctx.guild:
+            await ctx.send(
+                embed=embed(
+                    f"This command should be sent in a guild. To see your keys use `!mykeys`"
+                )
+            )
+
         session = Session()
 
         per_page = 20
@@ -140,9 +106,7 @@ class KeyStore(commands.Cog):
 
         for g in query.from_self().limit(per_page).offset(offset).all():
             msg.add_field(
-                name=g.pretty_name,
-                value=", ".join(k.platform.title() for k in g.keys),
-                inline=False,
+                name=g.pretty_name, value=", ".join(k.platform.title() for k in g.keys)
             )
 
         await ctx.send(embed=msg)
@@ -241,6 +205,7 @@ class KeyStore(commands.Cog):
 
         if not search_args:
             await ctx.send(embed=embed("No game search provided!"))
+            return
 
         games, _ = find_games(session, search_args, ctx.guild.id, 3)
 
@@ -284,4 +249,166 @@ class KeyStore(commands.Cog):
         await ctx.author.send(embed=msg)
 
 
-bot.add_cog(KeyStore(bot))
+class DirectCommands(commands.Cog):
+    """Run these commands in private messages to the bot"""
+
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command()
+    async def add(self, ctx, key, *game_name):
+        """Add a key or url"""
+        session = Session()
+
+        game = Game.get(session, " ".join(game_name))
+
+        platform, key = parse_key(key)
+
+        if ctx.guild:
+            try:
+                await ctx.message.delete()
+            except Exception:
+                pass
+            await ctx.author.send(
+                embed=embed(
+                    "You should really do this here, so it's only the bot giving away keys.",
+                    colour=Colours.LUMINOUS_VIVID_PINK,
+                )
+            )
+
+        if not platform:
+            await ctx.send(embed=embed(key, Colours.RED))
+            return
+
+        found = session.query(Key).filter(Key.key == key).count()
+
+        if found:
+            await ctx.send(
+                embed=embed(
+                    f"Key already exists!",
+                    Colours.GOLD,
+                )
+            )
+            return
+
+        member = Member.get(session, ctx.author.id, ctx.author.name)
+
+        game.keys.append(Key(platform=platform, key=key, creator=member, game=game))
+
+        session.commit()
+
+        await ctx.author.send(
+            embed=embed(
+                f'Key for "{game.pretty_name}" added. Thanks {ctx.author.name}!',
+                Colours.GREEN,
+                title=f"{platform.title()} Key Added",
+            )
+        )
+
+    @commands.command()
+    async def remove(self, ctx, platform, *game_name):
+        """Remove a key or url and send to you in a PM"""
+
+        if platform not in keyspace.keys():
+            await ctx.send(
+                embed=embed(
+                    f'"{platform}" is not valid platform',
+                    colour=Colours.RED,
+                    title="Search Error",
+                )
+            )
+            return
+
+        search_args = parse_name("_".join(game_name))
+
+        if not search_args:
+            await ctx.send(embed=embed("No game search provided!"))
+            return
+
+        session = Session()
+
+        member = Member.get(session, ctx.author.id, ctx.author.name)
+
+        query = (
+            session.query(Game)
+            .join(Key)
+            .filter(
+                Game.pretty_name.like(f"%{search_args}%"),
+                Key.platform == platform,
+                Key.creator_id == member.id,
+            )
+        )
+
+        if query.count() > 1:
+            msg = embed(
+                "Please limit your search",
+                title="Too many games found",
+                colour=Colours.RED,
+            )
+
+            for g, platforms in games.items():
+                msg.add_field(name=g, value=", ".join(platforms.keys()))
+
+            await ctx.send(embed=msg)
+            return
+
+        if not query.count():
+            await ctx.send(embed=embed("Game not found"))
+            return
+
+        game = query.first()
+        key = (
+            session.query(Key)
+            .filter(Key.game == game, Key.creator_id == member.id)
+            .first()
+        )
+
+        msg = embed(
+            f"Please find your key below", title="Key removed!", colour=Colours.GREEN
+        )
+
+        msg.add_field(name=game.pretty_name, value=key.key)
+
+        session.delete(key)
+        session.commit()
+
+        if not game.keys:
+            session.delete(game)
+
+        if key.creator_id != member.id:
+            member.last_claim = datetime.utcnow()
+        session.commit()
+
+        await ctx.author.send(embed=msg)
+
+    @commands.command()
+    async def mykeys(self, ctx, page=1):
+        """Browse your own keys"""
+        if ctx.guild:
+            await ctx.author.send(
+                embed=embed(f"This command needs to be sent in a direct message")
+            )
+            return
+
+        session = Session()
+        member = Member.get(session, ctx.author.id, ctx.author.name)
+
+        per_page = 15
+        offset = (page - 1) * per_page
+
+        query = session.query(Key).filter(Key.creator_id == member.id)
+
+        first = offset + 1
+        total = query.count()
+        last = min(page * per_page, total)
+
+        msg = embed(f"Showing {first} to {last} of {total}")
+
+        for k in query.limit(page).offset(offset).all():
+            msg.add_field(name=f"{k.game.pretty_name}", value=f"{k.platform.title()}")
+
+        await ctx.send(embed=msg)
+
+
+bot.add_cog(GuildCommands(bot))
+bot.add_cog(DirectCommands(bot))

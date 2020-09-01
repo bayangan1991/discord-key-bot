@@ -2,11 +2,14 @@
 
 Simple multi guild bot for giving away product keys to guild members. Any keys added sent to the bot will only be made available on guilds/servers you send the `!share` command.
 
-## Usage
+# Usage
 
 ```
-KeyStore:
-  add     Add a key (Do this in a private message)
+DirectCommands:
+  add     Add a key or url
+  mykeys  Browse your own keys
+  remove  Remove a key or url and send to you in a PM
+GuildCommands:
   browse  Browse through available games
   claim   Claims a game from available keys
   search  Searches available games
@@ -19,6 +22,8 @@ Type !help command for more info on a command.
 You can also type !help category for more info on a category.
 ```
 
+## Direct Commands
+
 ### `!add <key> [game_name...]`
 
 Adds a game key to your collection. (Do this in a private message)
@@ -30,6 +35,24 @@ The bot currently supports key parsing for:
 - origin
 - uplay
 - url (Such as humble gift links)
+
+### `!mykeys [page=1]`
+
+Browse your own keys
+
+### `!remove <platform> [game_name...]`
+
+Remove a key or url and send to you in a PM (Do this in a private message)
+
+The bot currently supports key parsing for:
+- gog
+- steam
+- playstation
+- origin
+- uplay
+- url (Such as humble gift links)
+
+## Guild Commands
 
 ### `!browse [page=1]`
 
