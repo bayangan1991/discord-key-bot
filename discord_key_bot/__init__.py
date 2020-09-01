@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands
 
 from .db import Session
-from .db.models import Game, Key, Member
+from .db.models import Game, Key, Member, Guild
 from .keyparse import parse_key, keyspace, parse_name
 from .colours import Colours
 
@@ -36,13 +36,16 @@ def find_games(session, search_args, guild_id, limit=15, offset=None):
     query = (
         session.query(Game)
         .join(Key)
-        .join(Member)
-        .filter(Member.guilds.contains(guild_id))
+        .filter(
+            Key.creator_id.in_(
+                session.query(Member.id).join(Guild).filter(Guild.guild_id == guild_id)
+            )
+        )
         .filter(Game.name.like(f"%{search_args}%"))
         .order_by(Game.pretty_name.asc())
     )
 
-    if not offset:
+    if offset is None:
         games = defaultdict(lambda: defaultdict(list))
 
         for g in query.from_self().offset(offset).limit(limit).all():
