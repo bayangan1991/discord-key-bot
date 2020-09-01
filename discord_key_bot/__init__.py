@@ -404,7 +404,7 @@ class DirectCommands(commands.Cog):
 
         msg = embed(f"Showing {first} to {last} of {total}")
 
-        for k in query.limit(page).offset(offset).all():
+        for k in query.limit(per_page).offset(offset).all():
             msg.add_field(name=f"{k.game.pretty_name}", value=f"{k.platform.title()}")
 
         await ctx.send(embed=msg)
