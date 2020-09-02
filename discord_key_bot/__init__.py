@@ -401,7 +401,12 @@ class DirectCommands(commands.Cog):
         per_page = 15
         offset = (page - 1) * per_page
 
-        query = session.query(Key).filter(Key.creator_id == member.id)
+        query = (
+            session.query(Key)
+            .join(Game)
+            .filter(Key.creator_id == member.id)
+            .order_by(Game.pretty_name.asc(), Key.platform.asc())
+        )
 
         first = offset + 1
         total = query.count()
