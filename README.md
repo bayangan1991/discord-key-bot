@@ -1,3 +1,5 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 # discord-key-bot
 
 Simple multi guild bot for giving away product keys to guild members. Any keys added sent to the bot will only be made available on guilds/servers you send the `!share` command.
