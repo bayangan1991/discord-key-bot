@@ -265,10 +265,6 @@ class DirectCommands(commands.Cog):
         """Add a key or url"""
         session = Session()
 
-        game = Game.get(session, " ".join(game_name))
-
-        platform, key = parse_key(key)
-
         if ctx.guild:
             try:
                 await ctx.message.delete()
@@ -281,9 +277,22 @@ class DirectCommands(commands.Cog):
                 )
             )
 
+        if not game_name:
+            await ctx.send(
+                embed=embed(
+                    f"Game name is required!",
+                    Colours.RED,
+                )
+            )
+            return
+
+        platform, key = parse_key(key)
+
         if not platform:
             await ctx.send(embed=embed(key, Colours.RED))
             return
+
+        game = Game.get(session, " ".join(game_name))
 
         found = session.query(Key).filter(Key.key == key).count()
 
