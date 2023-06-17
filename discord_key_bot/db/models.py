@@ -1,8 +1,7 @@
-import re
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 from discord_key_bot.keyparse import parse_name
 

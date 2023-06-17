@@ -131,3 +131,6 @@ dmypy.json
 
 config.py
 *.sqlite
+
+# PyCharm Files
+.idea/
