@@ -1,6 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
+from discord import Forbidden
 from discord.ext import commands
+from discord.ext.commands import Context
 
 from discord_key_bot.colours import Colours
 from discord_key_bot.db import Session
@@ -8,23 +10,25 @@ from discord_key_bot.db.models import Game, Key, Member
 from discord_key_bot.keyparse import keyspace, parse_key, parse_name
 from discord_key_bot.utils import embed
 
+UTC = timezone(timedelta(hours=0))
+
 
 class DirectCommands(commands.Cog):
     """Run these commands in private messages to the bot"""
 
-    def __init__(self, bot):
-        self.bot = bot
-
     @commands.command()
-    async def add(self, ctx, key, *game_name):
+    async def add(self, ctx: Context, key, *game_name):
         """Add a key or url"""
         session = Session()
 
         if ctx.guild:
             try:
                 await ctx.message.delete()
-            except Exception:
-                pass
+            except Forbidden:
+                await ctx.send(
+                    "You should probably delete that message as everyone in here can see it. I would do it but I "
+                    "don't have permission."
+                )
             await ctx.author.send(
                 embed=embed(
                     "You should really do this here, so it's only the bot giving away keys.",
@@ -145,7 +149,7 @@ class DirectCommands(commands.Cog):
             session.delete(game)
 
         if key.creator_id != member.id:
-            member.last_claim = datetime.utcnow()
+            member.last_claim = datetime.now(tz=UTC)
         session.commit()
 
         await ctx.author.send(embed=msg)

@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from discord.ext import commands
+from discord.ext.commands import Context
 
 from discord_key_bot.colours import Colours
 from discord_key_bot.db import Session
@@ -8,13 +9,12 @@ from discord_key_bot.db.models import Member
 from discord_key_bot.keyparse import keyspace, parse_name
 from discord_key_bot.utils import claimable, embed, find_games
 
+UTC = timezone(timedelta(hours=0))
+
 
 class GuildCommands(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
     @commands.command()
-    async def search(self, ctx, *game_name):
+    async def search(self, ctx: Context, *game_name: str) -> None:
         """Searches available games"""
 
         msg = embed("Top 15 search results...", title="Search Results")
@@ -32,7 +32,7 @@ class GuildCommands(commands.Cog):
         await ctx.send(embed=msg)
 
     @commands.command()
-    async def browse(self, ctx, page=1):
+    async def browse(self, ctx: Context, page: int = 1) -> None:
         """Browse through available games"""
 
         if not ctx.guild:
@@ -63,7 +63,7 @@ class GuildCommands(commands.Cog):
         await ctx.send(embed=msg)
 
     @commands.command()
-    async def share(self, ctx):
+    async def share(self, ctx: Context) -> None:
         """Add this guild the guilds you share keys with"""
         session = Session()
 
@@ -95,7 +95,7 @@ class GuildCommands(commands.Cog):
             )
 
     @commands.command()
-    async def unshare(self, ctx):
+    async def unshare(self, ctx: Context) -> None:
         """Remove this guild from the guilds you share keys with"""
         session = Session()
         member = Member.get(session, ctx.author.id, ctx.author.name)
@@ -126,7 +126,9 @@ class GuildCommands(commands.Cog):
             )
 
     @commands.command()
-    async def claim(self, ctx, platform=None, *game_name):
+    async def claim(
+        self, ctx: Context, platform: str | None = None, *game_name: str
+    ) -> None:
         """Claims a game from available keys"""
         session = Session()
 
@@ -194,7 +196,7 @@ class GuildCommands(commands.Cog):
             session.delete(game)
 
         if key.creator_id != member.id:
-            member.last_claim = datetime.utcnow()
+            member.last_claim = datetime.now(tz=UTC)
         session.commit()
 
         await ctx.author.send(embed=msg)

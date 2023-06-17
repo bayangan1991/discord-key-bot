@@ -1,6 +1,6 @@
 import os
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import groupby
 
 import discord
@@ -8,18 +8,20 @@ import discord
 from discord_key_bot.colours import Colours
 from discord_key_bot.db.models import Game, Guild, Key, Member
 
+UTC = timezone(timedelta(hours=0))
 
-def claimable(timestamp):
+
+def claimable(timestamp: datetime) -> tuple[bool, timedelta | None]:
     if timestamp:
         return (
-            datetime.utcnow() - timestamp > WAIT_TIME,
-            timestamp + WAIT_TIME - datetime.utcnow(),
+            datetime.now(tz=UTC) - timestamp > WAIT_TIME,
+            timestamp - datetime.now(tz=UTC) + WAIT_TIME,
         )
     else:
         return True, None
 
 
-def embed(text, colour=Colours.DEFAULT, title="Keybot"):
+def embed(text: str, colour=Colours.DEFAULT, title: str = "Keybot") -> discord.Embed:
     msg = discord.Embed(title=title, type="rich", description=text, color=colour)
 
     return msg

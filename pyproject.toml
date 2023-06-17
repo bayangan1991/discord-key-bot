@@ -23,26 +23,18 @@ select = [
   "E", # Pycodestyle
   "W", # Pycodestyle
 
-  #"C90", # Mccabe complexity
-  #"C",   # flake8-comprehensions
-  #"B",   # flake8-bugbear
+  "C90", # Mccabe complexity
+  "C",   # flake8-comprehensions
+  "B",   # flake8-bugbear
   "UP", # pyupgrade
   "S",  # bandit (security)
-  #"DTZ", # Enforce good datetime
+  "DTZ", # Enforce good datetime
   "I", # isort
 ]
 
 
 ignore = [
   "E501", # Line length is done by black
-  # "D202", # NoBlankLineAfterFunction
-  "S101", # Use of `assert` detected
-  "S104", # Ignore binding to all interfaces.
-  "S110", # try - except - pass. TODO: Remove this ignore
-  "S113", # requests call without timeout. TODO: Remove this ignore
-  "S602", # remove shell=True... not sure how we will do this
-  # TODO: WE must fix these xss vulnerabilities.
-  "S308", # mark_safe. We have lots of XSS vulns here but too many to fix in this pr
 ]
 
 # Exclude a variety of commonly ignored directories.
